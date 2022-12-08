@@ -1,0 +1,52 @@
+version: "3"
+
+services:
+  db:
+    restart: always
+    image: mariadb:latest
+    build: ./db
+    container_name: db
+    ports:
+      - "3306:3306"
+    networks:
+      Network:
+        ipv4_address: 172.32.0.2
+    env_file:
+      - .db.env
+  
+  api:
+    restart: always
+    image: python:latest
+    build: ./api
+    container_name: api
+    ports:
+      - "5000:5000"
+    networks:
+      Network:
+        ipv4_address: 172.32.0.3
+    depends_on:
+      - db
+    env_file:
+      - .api.env
+
+  front:
+    restart: always
+    image: node:latest
+    build: ./front
+    container_name: front
+    ports:
+      - "8080:8080"
+    networks:
+      Network:
+        ipv4_address: 172.32.0.4
+    depends_on:
+      - api
+    env_file:
+      - .front.env
+
+networks:
+  Network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.32.0.1/16
